@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board Game Selector</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #fff;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        #randomGame {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Board Game Selector</h1>
+    <form method="POST">
+        <label for="players">Number of Players:</label>
+        <input type="number" id="players" name="players" min="1" value="{{ selected_players }}" required>
+        
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty" name="difficulty">
+            <option value="" {% if not selected_difficulty %}selected{% endif %}>Any</option>
+            <option value="low" {% if selected_difficulty == 'low' %}selected{% endif %}>Low</option>
+            <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="high" {% if selected_difficulty == 'high' %}selected{% endif %}>High</option>
+        </select>
+        
+        <button type="submit">Filter Games</button>
+    </form>
+
+    <h2>Available Games:</h2>
+    <ul>
+    {% for game in games %}
+        <li>{{ game.name }} ({{ game.players_min }}-{{ game.players_max }} players, {{ game.difficulty }} difficulty)</li>
+    {% endfor %}
+    </ul>
+
+    <button onclick="getRandomGame()">Pick a Random Game</button>
+    <p id="randomGame"></p>
+
+    <script>
+    function getRandomGame() {
+        const players = document.getElementById('players').value;
+        const difficulty = document.getElementById('difficulty').value;
+        fetch(`/random?players=${players}&difficulty=${difficulty}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('randomGame').textContent = data.error;
+                } else {
+                    document.getElementById('randomGame').innerHTML = 
+                        `Random game: <strong>${data.name}</strong> (${data.players} players, ${data.difficulty} difficulty)`;
+                }
+            });
+    }
+ 
+    </script>
+</body>
+</html>
